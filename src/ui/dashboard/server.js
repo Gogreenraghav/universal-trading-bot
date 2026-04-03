@@ -8,14 +8,28 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 
+const BinanceTradingIntegration = require('../../integration/BinanceTradingIntegration');
+
 class DashboardServer {
   constructor(config) {
     this.config = {
       port: config.port || 3000,
       host: config.host || '0.0.0.0',
       botEngine: config.botEngine,
+      tradingConfig: config.tradingConfig || {
+        apiKey: '',
+        apiSecret: '',
+        testnet: true,
+        mode: 'paper'
+      },
       ...config
     };
+    
+    // Trading integration
+    this.tradingIntegration = new BinanceTradingIntegration({
+      ...this.config.tradingConfig,
+      dashboard: this
+    });
     
     // Express app
     this.app = express();
@@ -103,30 +117,132 @@ class DashboardServer {
     });
     
     // Trading control
-    this.app.post('/api/trade/buy', (req, res) => {
-      const { symbol, quantity, price } = req.body;
-      // In production, this would call the trading engine
-      res.json({ 
-        success: true, 
-        message: 'Buy order placed (simulated)',
-        orderId: `order_${Date.now()}`,
-        symbol,
-        quantity,
-        price
-      });
+    this.app.post('/api/trade/buy', async (req, res) => {
+      try {
+        const { symbol, quantity, price, orderType = 'MARKET' } = req.body;
+        
+        const result = await this.tradingIntegration.placeBuyOrder({
+          symbol,
+          quantity,
+          price,
+          orderType
+        });
+        
+        res.json({
+          success: true,
+          message: `Buy order placed${result.paper ? ' (paper trading)' : ''}`,
+          ...result
+        });
+        
+      } catch (error) {
+        console.error('Buy order failed:', error);
+        res.status(400).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to place buy order'
+        });
+      }
     });
     
-    this.app.post('/api/trade/sell', (req, res) => {
-      const { symbol, quantity, price } = req.body;
-      // In production, this would call the trading engine
-      res.json({ 
-        success: true, 
-        message: 'Sell order placed (simulated)',
-        orderId: `order_${Date.now()}`,
-        symbol,
-        quantity,
-        price
-      });
+    this.app.post('/api/trade/sell', async (req, res) => {
+      try {
+        const { symbol, quantity, price, orderType = 'MARKET' } = req.body;
+        
+        const result = await this.tradingIntegration.placeSellOrder({
+          symbol,
+          quantity,
+          price,
+          orderType
+        });
+        
+        res.json({
+          success: true,
+          message: `Sell order placed${result.paper ? ' (paper trading)' : ''}`,
+          ...result
+        });
+        
+      } catch (error) {
+        console.error('Sell order failed:', error);
+        res.status(400).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to place sell order'
+        });
+      }
+    });
+    
+    // Order management
+    this.app.delete('/api/trade/order/:orderId', async (req, res) => {
+      try {
+        const { orderId } = req.params;
+        const { symbol } = req.body;
+        
+        const result = await this.tradingIntegration.cancelOrder(symbol, orderId);
+        
+        res.json({
+          success: true,
+          message: 'Order cancelled',
+          ...result
+        });
+        
+      } catch (error) {
+        console.error('Cancel order failed:', error);
+        res.status(400).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to cancel order'
+        });
+      }
+    });
+    
+    // Portfolio data
+    this.app.get('/api/portfolio', async (req, res) => {
+      try {
+        const portfolio = this.tradingIntegration.getPaperPortfolio();
+        const positions = await this.tradingIntegration.getPositions();
+        const stats = await this.tradingIntegration.getTradingStats();
+        
+        res.json({
+          success: true,
+          portfolio: {
+            ...portfolio,
+            positions,
+            stats
+          }
+        });
+        
+      } catch (error) {
+        console.error('Failed to get portfolio:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to get portfolio data'
+        });
+      }
+    });
+    
+    // Order history
+    this.app.get('/api/trade/history', async (req, res) => {
+      try {
+        const { symbol = 'BTCUSDT', limit = 50 } = req.query;
+        
+        const orders = await this.tradingIntegration.getOrderHistory(symbol, parseInt(limit));
+        const trades = await this.tradingIntegration.getTradeHistory(symbol, parseInt(limit));
+        
+        res.json({
+          success: true,
+          orders,
+          trades
+        });
+        
+      } catch (error) {
+        console.error('Failed to get trade history:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to get trade history'
+        });
+      }
     });
     
     // Serve main page
@@ -206,34 +322,54 @@ class DashboardServer {
    * Get dashboard data
    */
   getDashboardData() {
+    // Get portfolio data from trading integration
+    let portfolioData = {
+      totalValue: 10000,
+      availableBalance: 5000,
+      invested: 5000,
+      pnl: 250,
+      pnlPercent: 5,
+      positions: [
+        { symbol: 'BTCUSDT', quantity: 0.05, entry: 60000, current: 65000, pnl: 250 },
+        { symbol: 'ETHUSDT', quantity: 1, entry: 3400, current: 3500, pnl: 100 }
+      ]
+    };
+    
+    // Try to get real portfolio data
+    try {
+      const paperPortfolio = this.tradingIntegration.getPaperPortfolio();
+      if (paperPortfolio) {
+        portfolioData = {
+          totalValue: paperPortfolio.totalValue,
+          availableBalance: paperPortfolio.availableBalance,
+          invested: paperPortfolio.totalValue - paperPortfolio.availableBalance,
+          pnl: 250, // Will be calculated from positions
+          pnlPercent: 5,
+          positions: paperPortfolio.positions || []
+        };
+      }
+    } catch (error) {
+      console.error('Failed to get portfolio data:', error.message);
+    }
+    
     return {
       bot: {
         status: this.state.botStatus,
         platform: 'crypto',
         exchange: 'binance',
-        mode: 'paper',
+        mode: this.config.tradingConfig.mode || 'paper',
         version: '1.0.0'
       },
       
       market: {
-        btcPrice: 65000, // Example data
+        btcPrice: 65000,
         ethPrice: 3500,
         totalMarketCap: '2.5T',
         btcDominance: '52%',
         fearGreedIndex: 65
       },
       
-      portfolio: {
-        totalValue: 10000,
-        availableBalance: 5000,
-        invested: 5000,
-        pnl: 250,
-        pnlPercent: 5,
-        positions: [
-          { symbol: 'BTCUSDT', quantity: 0.05, entry: 60000, current: 65000, pnl: 250 },
-          { symbol: 'ETHUSDT', quantity: 1, entry: 3400, current: 3500, pnl: 100 }
-        ]
-      },
+      portfolio: portfolioData,
       
       trading: {
         todayTrades: 5,
@@ -247,7 +383,7 @@ class DashboardServer {
         dailyLossLimit: 1000,
         dailyLossUsed: 250,
         maxPositionSize: 2000,
-        currentExposure: 5000,
+        currentExposure: portfolioData.invested,
         riskScore: 35
       },
       
@@ -309,6 +445,36 @@ class DashboardServer {
   /**
    * Update trade data
    */
+  updateTrade(data) {
+    this.broadcast({
+      type: 'trade_update',
+      data
+    });
+  }
+  
+  /**
+   * Update open orders
+   */
+  updateOpenOrders(orders) {
+    this.broadcast({
+      type: 'open_orders_update',
+      data: { orders }
+    });
+  }
+  
+  /**
+   * Update market data
+   */
+  updateMarketData(data) {
+    this.broadcast({
+      type: 'market_update',
+      data
+    });
+  }
+  
+  /**
+   * Update trade data
+   */
   updateTradeData(data) {
     this.broadcast({
       type: 'trade_update',
@@ -329,11 +495,22 @@ class DashboardServer {
   /**
    * Start server
    */
-  start() {
+  async start() {
     return new Promise((resolve, reject) => {
-      this.server.listen(this.config.port, this.config.host, () => {
+      this.server.listen(this.config.port, this.config.host, async () => {
         this.state.started = true;
         console.log(`✅ Dashboard server running at http://${this.config.host}:${this.config.port}`);
+        
+        // Initialize trading integration
+        try {
+          await this.tradingIntegration.initialize();
+          this.state.botStatus = 'ready';
+          console.log('✅ Trading integration initialized');
+        } catch (error) {
+          console.warn('⚠️ Trading integration failed, running in paper mode:', error.message);
+          this.state.botStatus = 'paper_mode';
+        }
+        
         resolve();
       });
       
