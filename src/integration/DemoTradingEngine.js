@@ -8,6 +8,8 @@ class DemoTradingEngine {
     this.config = {
       initialBalance: config.initialBalance || 10000,
       defaultCurrency: config.defaultCurrency || 'USDT',
+      minBalance: config.minBalance || 100,     // Minimum $100
+      maxBalance: config.maxBalance || 1000000, // Maximum $1,000,000
       supportedPairs: config.supportedPairs || [
         'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'XRPUSDT',
         'SOLUSDT', 'DOTUSDT', 'DOGEUSDT', 'MATICUSDT', 'LTCUSDT'
@@ -16,6 +18,7 @@ class DemoTradingEngine {
       slippage: config.slippage || 0.001, // 0.1% slippage
       marketDataDelay: config.marketDataDelay || 1000, // 1 second delay
       enableReset: config.enableReset || true,
+      enableCustomBalance: config.enableCustomBalance || true,
       ...config
     };
     
@@ -514,6 +517,73 @@ class DemoTradingEngine {
         netProfit: (this.state.balance.USDT + this.getTotalPortfolioValue()) - this.config.initialBalance
       },
       demo: true
+    };
+  }
+  
+  /**
+   * Set custom demo balance
+   */
+  setCustomBalance(amount, currency = 'USDT') {
+    if (!this.config.enableCustomBalance) {
+      throw new Error('Custom balance is disabled');
+    }
+    
+    // Validate amount
+    if (typeof amount !== 'number' || isNaN(amount)) {
+      throw new Error('Invalid amount. Must be a number');
+    }
+    
+    if (amount < this.config.minBalance) {
+      throw new Error(`Minimum balance is ${this.config.minBalance}`);
+    }
+    
+    if (amount > this.config.maxBalance) {
+      throw new Error(`Maximum balance is ${this.config.maxBalance}`);
+    }
+    
+    console.log(`💰 Setting custom demo balance: ${amount} ${currency}`);
+    
+    // Calculate difference from current balance
+    const currentBalance = this.state.balance[this.config.defaultCurrency] || 0;
+    const difference = amount - currentBalance;
+    
+    // Update balance
+    this.state.balance = {
+      [currency]: amount
+    };
+    
+    // Update initial balance in config for future resets
+    this.config.initialBalance = amount;
+    this.config.defaultCurrency = currency;
+    
+    // If increasing balance, add to performance tracking
+    if (difference > 0) {
+      this.state.performance.totalProfitLoss += difference;
+    }
+    
+    return {
+      success: true,
+      oldBalance: currentBalance,
+      newBalance: amount,
+      currency,
+      difference,
+      message: `Demo balance set to ${amount} ${currency}`
+    };
+  }
+  
+  /**
+   * Get balance configuration options
+   */
+  getBalanceConfig() {
+    return {
+      currentBalance: this.state.balance[this.config.defaultCurrency] || this.config.initialBalance,
+      currency: this.config.defaultCurrency,
+      minBalance: this.config.minBalance,
+      maxBalance: this.config.maxBalance,
+      initialBalance: this.config.initialBalance,
+      enableCustomBalance: this.config.enableCustomBalance,
+      quickPresets: [100, 500, 1000, 5000, 10000, 50000, 100000],
+      supportedCurrencies: ['USDT', 'INR', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF']
     };
   }
   

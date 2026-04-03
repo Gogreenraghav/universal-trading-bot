@@ -86,6 +86,31 @@ class DemoModeController {
         if (cancelSwitchBtn) {
             cancelSwitchBtn.addEventListener('click', () => this.hideModeSwitchConfirmation());
         }
+        
+        // Balance settings button
+        const balanceSettingsBtn = document.getElementById('balanceSettings');
+        if (balanceSettingsBtn) {
+            balanceSettingsBtn.addEventListener('click', () => this.showBalanceSettings());
+        }
+        
+        // Balance settings modal buttons
+        const saveBalanceBtn = document.getElementById('saveBalance');
+        const cancelBalanceBtn = document.getElementById('cancelBalance');
+        const presetButtons = document.querySelectorAll('.balance-preset');
+        
+        if (saveBalanceBtn) {
+            saveBalanceBtn.addEventListener('click', () => this.saveCustomBalance());
+        }
+        
+        if (cancelBalanceBtn) {
+            cancelBalanceBtn.addEventListener('click', () => this.hideBalanceSettings());
+        }
+        
+        if (presetButtons.length > 0) {
+            presetButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => this.applyPresetBalance(e.target.dataset.preset));
+            });
+        }
     }
     
     /**
@@ -307,6 +332,218 @@ class DemoModeController {
             console.error('❌ Mode switch failed:', error);
             this.showNotification('Failed to switch mode', 'error');
             this.hideModeSwitchConfirmation();
+        }
+    }
+    
+    /**
+     * Show balance settings modal
+     */
+    async showBalanceSettings() {
+        try {
+            // Load balance configuration
+            const response = await fetch('/api/demo/balance/config');
+            const data = await response.json();
+            
+            if (!data.success) {
+                this.showNotification('Failed to load balance settings', 'error');
+                return;
+            }
+            
+            const config = data.config;
+            
+            // Create or update balance settings modal
+            this.createBalanceSettingsModal(config);
+            
+            // Show modal
+            const modal = document.getElementById('balanceSettingsModal');
+            if (modal) {
+                modal.classList.add('active');
+                
+                // Set current values
+                const amountInput = document.getElementById('balanceAmount');
+                const currencySelect = document.getElementById('balanceCurrency');
+                const minSpan = document.getElementById('balanceMin');
+                const maxSpan = document.getElementById('balanceMax');
+                const currentSpan = document.getElementById('balanceCurrent');
+                
+                if (amountInput) amountInput.value = config.currentBalance;
+                if (currencySelect) currencySelect.value = config.currency;
+                if (minSpan) minSpan.textContent = config.minBalance;
+                if (maxSpan) maxSpan.textContent = config.maxBalance;
+                if (currentSpan) currentSpan.textContent = `${config.currentBalance} ${config.currency}`;
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to show balance settings:', error);
+            this.showNotification('Failed to load balance settings', 'error');
+        }
+    }
+    
+    /**
+     * Create balance settings modal
+     */
+    createBalanceSettingsModal(config) {
+        if (document.getElementById('balanceSettingsModal')) {
+            return; // Modal already exists
+        }
+        
+        const modalHTML = `
+            <div class="mode-confirmation" id="balanceSettingsModal">
+                <div class="mode-confirmation-content" style="max-width: 500px;">
+                    <h3><i class="fas fa-coins"></i> Demo Balance Settings</h3>
+                    
+                    <div class="balance-info">
+                        <p>Current balance: <strong id="balanceCurrent">${config.currentBalance} ${config.currency}</strong></p>
+                        <p>Range: <span id="balanceMin">${config.minBalance}</span> to <span id="balanceMax">${config.maxBalance}</span> ${config.currency}</p>
+                    </div>
+                    
+                    <div class="balance-presets">
+                        <h4>Quick Presets:</h4>
+                        <div class="preset-buttons">
+                            <button class="btn btn-preset" data-preset="100">$100</button>
+                            <button class="btn btn-preset" data-preset="500">$500</button>
+                            <button class="btn btn-preset" data-preset="1K">$1,000</button>
+                            <button class="btn btn-preset" data-preset="5K">$5,000</button>
+                            <button class="btn btn-preset" data-preset="10K">$10,000</button>
+                            <button class="btn btn-preset" data-preset="50K">$50,000</button>
+                            <button class="btn btn-preset" data-preset="100K">$100,000</button>
+                            <button class="btn btn-preset" data-preset="1M">$1,000,000</button>
+                        </div>
+                    </div>
+                    
+                    <div class="custom-balance">
+                        <h4>Custom Amount:</h4>
+                        <div class="balance-input-group">
+                            <input type="number" id="balanceAmount" 
+                                   min="${config.minBalance}" 
+                                   max="${config.maxBalance}"
+                                   step="100"
+                                   value="${config.currentBalance}"
+                                   placeholder="Enter amount">
+                            <select id="balanceCurrency">
+                                ${config.supportedCurrencies.map(currency => 
+                                    `<option value="${currency}" ${currency === config.currency ? 'selected' : ''}>${currency}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <p class="input-hint">Enter any amount between ${config.minBalance} and ${config.maxBalance}</p>
+                    </div>
+                    
+                    <div class="mode-confirmation-buttons">
+                        <button class="btn btn-success" id="saveBalance">
+                            <i class="fas fa-save"></i> Save Balance
+                        </button>
+                        <button class="btn btn-secondary" id="cancelBalance">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Re-attach event listeners
+        this.setupEventListeners();
+    }
+    
+    /**
+     * Hide balance settings modal
+     */
+    hideBalanceSettings() {
+        const modal = document.getElementById('balanceSettingsModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+    
+    /**
+     * Apply preset balance
+     */
+    async applyPresetBalance(preset) {
+        try {
+            const response = await fetch('/api/demo/balance/preset', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ preset })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showNotification(`Balance set to $${preset}`, 'success');
+                this.hideBalanceSettings();
+                
+                // Update UI
+                this.updateUI();
+                
+                // Reload dashboard data
+                if (this.dashboard && this.dashboard.loadDashboardData) {
+                    this.dashboard.loadDashboardData();
+                }
+                
+            } else {
+                this.showNotification(`Failed: ${data.message}`, 'error');
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to apply preset:', error);
+            this.showNotification('Failed to set balance', 'error');
+        }
+    }
+    
+    /**
+     * Save custom balance
+     */
+    async saveCustomBalance() {
+        try {
+            const amountInput = document.getElementById('balanceAmount');
+            const currencySelect = document.getElementById('balanceCurrency');
+            
+            if (!amountInput || !currencySelect) {
+                this.showNotification('Balance settings not found', 'error');
+                return;
+            }
+            
+            const amount = parseFloat(amountInput.value);
+            const currency = currencySelect.value;
+            
+            if (isNaN(amount) || amount <= 0) {
+                this.showNotification('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            const response = await fetch('/api/demo/balance/set', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ amount, currency })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                this.showNotification(`Balance set to ${amount} ${currency}`, 'success');
+                this.hideBalanceSettings();
+                
+                // Update UI
+                this.updateUI();
+                
+                // Reload dashboard data
+                if (this.dashboard && this.dashboard.loadDashboardData) {
+                    this.dashboard.loadDashboardData();
+                }
+                
+            } else {
+                this.showNotification(`Failed: ${data.message}`, 'error');
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to save custom balance:', error);
+            this.showNotification('Failed to save balance', 'error');
         }
     }
     

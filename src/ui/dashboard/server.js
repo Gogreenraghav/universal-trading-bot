@@ -345,6 +345,122 @@ class DashboardServer {
         });
       }
     });
+    
+    // Custom balance endpoints
+    this.app.get('/api/demo/balance/config', async (req, res) => {
+      try {
+        // Get balance configuration from demo engine
+        const demoEngine = this.tradingIntegration.demoEngine;
+        if (!demoEngine || !demoEngine.getBalanceConfig) {
+          return res.status(400).json({
+            success: false,
+            message: 'Demo engine not available'
+          });
+        }
+        
+        const config = demoEngine.getBalanceConfig();
+        
+        res.json({
+          success: true,
+          config,
+          message: 'Balance configuration retrieved'
+        });
+      } catch (error) {
+        console.error('Failed to get balance config:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to get balance configuration'
+        });
+      }
+    });
+    
+    this.app.post('/api/demo/balance/set', async (req, res) => {
+      try {
+        const { amount, currency } = req.body;
+        
+        if (!amount || typeof amount !== 'number') {
+          return res.status(400).json({
+            success: false,
+            message: 'Valid amount is required'
+          });
+        }
+        
+        // Get demo engine
+        const demoEngine = this.tradingIntegration.demoEngine;
+        if (!demoEngine || !demoEngine.setCustomBalance) {
+          return res.status(400).json({
+            success: false,
+            message: 'Demo engine not available'
+          });
+        }
+        
+        const result = await demoEngine.setCustomBalance(amount, currency || 'USDT');
+        
+        res.json(result);
+      } catch (error) {
+        console.error('Failed to set custom balance:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to set custom balance'
+        });
+      }
+    });
+    
+    this.app.post('/api/demo/balance/preset', async (req, res) => {
+      try {
+        const { preset } = req.body;
+        
+        if (!preset) {
+          return res.status(400).json({
+            success: false,
+            message: 'Preset amount is required'
+          });
+        }
+        
+        // Map preset names to amounts
+        const presetMap = {
+          '100': 100,
+          '500': 500,
+          '1K': 1000,
+          '5K': 5000,
+          '10K': 10000,
+          '50K': 50000,
+          '100K': 100000,
+          '500K': 500000,
+          '1M': 1000000
+        };
+        
+        const amount = presetMap[preset];
+        if (!amount) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid preset. Use: 100, 500, 1K, 5K, 10K, 50K, 100K, 500K, 1M'
+          });
+        }
+        
+        // Get demo engine
+        const demoEngine = this.tradingIntegration.demoEngine;
+        if (!demoEngine || !demoEngine.setCustomBalance) {
+          return res.status(400).json({
+            success: false,
+            message: 'Demo engine not available'
+          });
+        }
+        
+        const result = await demoEngine.setCustomBalance(amount, 'USDT');
+        
+        res.json(result);
+      } catch (error) {
+        console.error('Failed to set preset balance:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to set preset balance'
+        });
+      }
+    });
   }
   
   /**
