@@ -9,6 +9,7 @@ const WebSocket = require('ws');
 const path = require('path');
 
 const BinanceTradingIntegration = require('../../integration/BinanceTradingIntegration');
+const RiskDashboard = require('../../integration/RiskDashboard');
 
 class DashboardServer {
   constructor(config) {
@@ -29,6 +30,21 @@ class DashboardServer {
     this.tradingIntegration = new BinanceTradingIntegration({
       ...this.config.tradingConfig,
       dashboard: this
+    });
+    
+    // Risk dashboard
+    this.riskDashboard = new RiskDashboard({
+      tradingIntegration: this.tradingIntegration,
+      dashboard: this,
+      riskLimits: {
+        dailyLossLimit: 0.10,
+        maxPositionSize: 0.02,
+        maxPortfolioRisk: 0.20,
+        maxLeverage: 3,
+        maxDrawdown: 0.25,
+        minDiversification: 3,
+        maxConcentration: 0.40
+      }
     });
     
     // Express app
@@ -509,6 +525,14 @@ class DashboardServer {
         } catch (error) {
           console.warn('⚠️ Trading integration failed, running in paper mode:', error.message);
           this.state.botStatus = 'paper_mode';
+        }
+        
+        // Initialize risk dashboard
+        try {
+          await this.riskDashboard.initialize();
+          console.log('✅ Risk dashboard initialized');
+        } catch (error) {
+          console.warn('⚠️ Risk dashboard failed:', error.message);
         }
         
         resolve();
