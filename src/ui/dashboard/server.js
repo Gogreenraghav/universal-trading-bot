@@ -10,6 +10,7 @@ const path = require('path');
 
 const BinanceTradingIntegration = require('../../integration/BinanceTradingIntegration');
 const RiskDashboard = require('../../integration/RiskDashboard');
+const SettingsManager = require('../../integration/SettingsManager');
 
 class DashboardServer {
   constructor(config) {
@@ -32,19 +33,16 @@ class DashboardServer {
       dashboard: this
     });
     
-    // Risk dashboard
+    // Settings manager
+    this.settingsManager = new SettingsManager({
+      dashboard: this
+    });
+    
+    // Risk dashboard (uses settings from settings manager)
     this.riskDashboard = new RiskDashboard({
       tradingIntegration: this.tradingIntegration,
       dashboard: this,
-      riskLimits: {
-        dailyLossLimit: 0.10,
-        maxPositionSize: 0.02,
-        maxPortfolioRisk: 0.20,
-        maxLeverage: 3,
-        maxDrawdown: 0.25,
-        minDiversification: 3,
-        maxConcentration: 0.40
-      }
+      riskLimits: this.settingsManager.settings.risk
     });
     
     // Express app
@@ -527,8 +525,17 @@ class DashboardServer {
           this.state.botStatus = 'paper_mode';
         }
         
-        // Initialize risk dashboard
+        // Initialize settings manager
         try {
+          await this.settingsManager.initialize();
+          console.log('✅ Settings manager initialized');
+        } catch (error) {
+          console.warn('⚠️ Settings manager failed:', error.message);
+        }
+        
+        // Initialize risk dashboard (with updated settings)
+        try {
+          this.riskDashboard.config.riskLimits = this.settingsManager.settings.risk;
           await this.riskDashboard.initialize();
           console.log('✅ Risk dashboard initialized');
         } catch (error) {
