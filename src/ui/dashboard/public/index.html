@@ -77,6 +77,20 @@
                 </div>
                 
                 <div class="header-right">
+                    <!-- Demo Mode Controls -->
+                    <div class="demo-controls" id="demoControls" style="display: none;">
+                        <div class="demo-badge" id="demoBadge">
+                            <i class="fas fa-flask"></i>
+                            <span>DEMO MODE</span>
+                        </div>
+                        <button class="btn btn-demo" id="resetDemo">
+                            <i class="fas fa-redo"></i> Reset Demo
+                        </button>
+                        <button class="btn btn-switch" id="switchMode">
+                            <i class="fas fa-exchange-alt"></i> Switch to Live
+                        </button>
+                    </div>
+                    
                     <div class="bot-controls">
                         <button class="btn btn-start" id="startBot">
                             <i class="fas fa-play"></i> Start Bot
@@ -316,5 +330,6 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="demo.js"></script>
 </body>
 </html>

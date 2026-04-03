@@ -11,6 +11,14 @@ class DashboardApp {
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         
+        // Demo mode state
+        this.demoMode = {
+            active: true,
+            balance: 10000,
+            canReset: true,
+            canSwitch: true
+        };
+        
         // Initialize
         this.init();
     }
@@ -30,8 +38,14 @@ class DashboardApp {
         // Setup event listeners
         this.setupEventListeners();
         
+        // Setup demo mode controls
+        this.setupDemoControls();
+        
         // Start periodic updates
         this.startPeriodicUpdates();
+        
+        // Load demo mode info
+        this.loadDemoInfo();
         
         console.log('✅ Dashboard App initialized');
     }

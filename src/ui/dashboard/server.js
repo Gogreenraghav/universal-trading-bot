@@ -8,7 +8,7 @@ const http = require('http');
 const WebSocket = require('ws');
 const path = require('path');
 
-const BinanceTradingIntegration = require('../../integration/BinanceTradingIntegration');
+const UnifiedTradingIntegration = require('../../integration/UnifiedTradingIntegration');
 const RiskDashboard = require('../../integration/RiskDashboard');
 const SettingsManager = require('../../integration/SettingsManager');
 
@@ -27,10 +27,18 @@ class DashboardServer {
       ...config
     };
     
-    // Trading integration
-    this.tradingIntegration = new BinanceTradingIntegration({
-      ...this.config.tradingConfig,
-      dashboard: this
+    // Unified trading integration (supports demo + live modes)
+    this.tradingIntegration = new UnifiedTradingIntegration({
+      defaultMode: 'demo', // Start in demo mode by default
+      demoConfig: {
+        initialBalance: 10000,
+        defaultCurrency: 'USDT',
+        dashboard: this
+      },
+      liveConfig: {
+        ...this.config.tradingConfig,
+        dashboard: this
+      }
     });
     
     // Settings manager
@@ -262,6 +270,80 @@ class DashboardServer {
     // Serve main page
     this.app.get('/', (req, res) => {
       res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    });
+    
+    // Demo mode endpoints
+    this.app.get('/api/demo/info', async (req, res) => {
+      try {
+        const modeInfo = this.tradingIntegration.getModeInfo();
+        
+        res.json({
+          success: true,
+          modeInfo,
+          message: 'Demo mode information retrieved'
+        });
+      } catch (error) {
+        console.error('Failed to get demo info:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to get demo mode information'
+        });
+      }
+    });
+    
+    this.app.post('/api/demo/switch', async (req, res) => {
+      try {
+        const { mode } = req.body;
+        
+        if (!mode || !['demo', 'live'].includes(mode)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid mode. Use "demo" or "live"'
+          });
+        }
+        
+        const result = await this.tradingIntegration.switchMode(mode);
+        
+        res.json(result);
+      } catch (error) {
+        console.error('Failed to switch mode:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to switch trading mode'
+        });
+      }
+    });
+    
+    this.app.post('/api/demo/reset', async (req, res) => {
+      try {
+        const result = await this.tradingIntegration.resetDemoAccount();
+        
+        res.json(result);
+      } catch (error) {
+        console.error('Failed to reset demo account:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to reset demo account'
+        });
+      }
+    });
+    
+    this.app.get('/api/demo/performance', async (req, res) => {
+      try {
+        const performance = await this.tradingIntegration.getPerformance();
+        
+        res.json(performance);
+      } catch (error) {
+        console.error('Failed to get demo performance:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          message: 'Failed to get demo performance'
+        });
+      }
     });
   }
   
