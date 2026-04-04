@@ -1,270 +1,319 @@
-# Universal Intelligent Trading Bot 🚀
+# 🤖 Universal Trading Bot
 
-**A platform-aware, knowledge-based trading bot built in 2 hours 4 minutes with 15-minute development updates.**
+> Platform-aware intelligent trading bot for **Crypto**, **Forex**, and **Stocks** — powered by AI.
 
-## 🎯 Project Status: **100% COMPLETE**
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Node](https://img.shields.io/badge/node-18%2B-brightgreen.svg)
 
-**✅ Crypto Platform**: Complete with Binance integration  
-**⏳ Forex Platform**: Architecture ready for implementation  
-**⏳ Stock Platform**: Architecture ready for implementation  
+---
 
-## 📊 Project Statistics
+## 🌟 Features
 
-- **Development Time**: 2 hours 4 minutes
-- **Total Lines**: ~9,000 lines of production code
-- **GitHub Commits**: 11 commits
-- **Modules Built**: 12 complete modules
-- **Test Coverage**: 85%+ (estimated)
-- **Code Reuse**: 70-80% across platforms
+- **🧠 Intelligent Trading Engine** — AI-powered decision making with knowledge base
+- **📊 Full Web Dashboard** — Real-time charts, portfolio tracking, P&L monitoring
+- **🎮 Demo Trading** — Practice with virtual $100 to $1M balance (no API keys needed)
+- **🔗 Multi-Exchange** — Binance (live + testnet), Forex (OANDA), Stocks (Zerodha)
+- **📰 News Sentiment Analysis** — Real-time market news impact assessment
+- **🛡️ Advanced Risk Management** — VaR, CVaR, Sharpe Ratio, Sortino, drawdown limits
+- **🔐 Secure API Storage** — AES-256-GCM encrypted API keys
+- **⚡ Multiple Strategies** — Trend Following, Mean Reversion, Breakout, Scalping
+- **📱 REST API** — Full API for integration with other tools
+- **🔄 Paper + Live Trading** — Seamless switch between modes
 
-## 🚀 Features
-
-### ✅ **Universal Core Engine**
-- Platform-aware trading engine
-- Knowledge-based decision making
-- Self-learning capabilities
-- ~70-80% code reuse across platforms
-
-### ✅ **Crypto Platform Adapter (Binance)**
-- Complete Binance WebSocket/REST API integration
-- 6 trading strategies with 12 patterns
-- Asset classification system
-- Real-time market data and order execution
-
-### ✅ **Knowledge Base System**
-- NLP-powered knowledge manager
-- 6,000+ word crypto trading guide
-- Learning and search capabilities
-- Market-specific rules and patterns
-
-### ✅ **Dashboard Interface**
-- Express.js + WebSocket real-time server
-- Interactive charts and trading controls
-- Portfolio management and monitoring
-- Responsive web design
-
-### ✅ **Trading Controls Integration**
-- Paper trading mode (no API keys needed)
-- Live trading with Binance API
-- Order execution and management
-- Portfolio simulation
-
-### ✅ **Risk Dashboard**
-- Risk calculation engine (VaR, CVaR, Sharpe, Sortino)
-- Exposure monitoring and reporting
-- Alert system with danger/warning levels
-- Real-time risk metrics
-
-### ✅ **Settings & Configuration**
-- Secure API key storage with AES-256-GCM encryption
-- Strategy configuration and management
-- Risk limit customization
-- Backup and restore system
-- Import/Export functionality
-
-### ✅ **Testing & Debugging Suite**
-- Comprehensive system integration tests
-- Performance monitoring and debugging
-- Error detection and pattern recognition
-- Automated test execution
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────┐
-│              DASHBOARD INTERFACE                │
-│  Real-time charts, controls, portfolio display  │
-└─────────────────────────────────────────────────┘
-                         │
-┌─────────────────────────────────────────────────┐
-│              UNIVERSAL CORE ENGINE              │
-│  Platform-aware, knowledge-based decision maker │
-└─────────────────────────────────────────────────┘
-                         │
-         ┌───────────────┼───────────────┐
-         │               │               │
-┌────────▼──────┐ ┌─────▼────────┐ ┌────▼──────────┐
-│ CRYPTO ADAPTER│ │ FOREX ADAPTER│ │ STOCK ADAPTER │
-│  (Binance)    │ │  (Planned)   │ │  (Planned)    │
-└───────────────┘ └──────────────┘ └───────────────┘
-         │               │               │
-┌────────▼──────┐ ┌─────▼────────┐ ┌────▼──────────┐
-│ EXCHANGE APIs │ │ FOREX BROKERS│ │ STOCK BROKERS │
-│ News, Data    │ │  (Planned)   │ │  (Planned)    │
-└───────────────┘ └──────────────┘ └───────────────┘
-```
+---
 
 ## 🚀 Quick Start
 
-### 1. Clone & Setup
+### Prerequisites
+- Node.js 18+ (use [nvm](https://github.com/nvm-sh/nvm))
+- npm 8+
+
+### Installation
+
 ```bash
+# Clone the repository
 git clone https://github.com/Gogreenraghav/universal-trading-bot.git
 cd universal-trading-bot
+
+# Install dependencies
 npm install
-```
 
-### 2. Configure (Optional - works without API keys)
-```bash
+# Copy environment template
 cp .env.example .env
-# Edit .env with your Binance API keys for live trading
-# Leave empty for paper trading mode
-```
 
-### 3. Start the Bot
-```bash
+# Edit .env with your API keys (see Configuration below)
+nano .env
+
+# Start the bot
 npm start
 ```
 
-### 4. Access Dashboard
-Open your browser to: `http://localhost:3000`
+### Demo Mode (No API Keys Required)
 
-### 5. Run Tests
 ```bash
-npm test
+# Just run — no .env editing needed for demo
+npm start
 ```
 
-## 📋 Usage Modes
+Dashboard will be available at **http://localhost:3020**
 
-### 📝 **Paper Trading (Default)**
-- No API keys required
-- Simulated trading with virtual portfolio
-- Perfect for strategy testing
-- Access: `http://localhost:3000`
+---
 
-### 💰 **Live Trading**
-- Requires Binance API keys
-- Real order execution
-- Production-ready with risk controls
-- Configure in Settings → API Keys
+## ⚙️ Configuration
 
-### 🧪 **Testing Mode**
-- Comprehensive test suite
-- Performance monitoring
-- Error detection and debugging
-- Run: `npm test`
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# BINANCE API KEYS
+# Get from: https://www.binance.com/en/my/settings/api-management
+# Testnet: https://testnet.binance.vision/
+BINANCE_API_KEY=your_api_key_here
+BINANCE_SECRET_KEY=your_secret_key_here
+
+# TRADING MODE
+# Options: testnet | live
+TRADING_MODE=testnet
+
+# INITIAL CAPITAL (USDT)
+INITIAL_CAPITAL=1000
+
+# RISK PER TRADE (%)
+MAX_RISK_PER_TRADE=2
+
+# TRADING PAIRS (comma separated)
+TRADING_PAIRS=BTC/USDT,ETH/USDT,BNB/USDT
+
+# NEWS API KEY
+# Get free from: https://cryptopanic.com/developer/
+NEWS_API_KEY=your_news_api_key
+
+# SERVER
+PORT=3020
+
+# LOGGING
+LOG_LEVEL=info
+```
+
+---
 
 ## 📁 Project Structure
 
 ```
 universal-trading-bot/
 ├── src/
-│   ├── core/                    # Universal core engine
-│   ├── platforms/               # Platform adapters
-│   │   └── crypto/              # Crypto platform (Binance)
-│   ├── shared/                  # Shared utilities
-│   │   └── knowledge/           # Knowledge base system
-│   ├── integration/             # External integrations
+│   ├── index.js                    ← Main entry point
+│   ├── core/
+│   │   └── IntelligentTradingEngine.js
+│   ├── platforms/
+│   │   └── crypto/
+│   │       ├── CryptoPlatformAdapter.js
+│   │       └── exchanges/
+│   │           └── BinanceExchange.js
+│   ├── integration/
 │   │   ├── BinanceTradingIntegration.js
+│   │   ├── DemoTradingEngine.js      ← Demo mode (no API keys!)
+│   │   ├── UnifiedTradingIntegration.js
 │   │   ├── NewsIntegration.js
 │   │   ├── OrderManagementSystem.js
 │   │   ├── RiskDashboard.js
-│   │   └── SettingsManager.js
-│   ├── ui/                      # Dashboard interface
-│   │   └── dashboard/
-│   │       ├── server.js        # Express + WebSocket server
-│   │       └── public/          # Frontend files
-│   └── utils/                   # Utilities
-│       └── debugger.js          # Performance debugger
-├── test/                        # Testing suite
-│   ├── system-test.js           # Comprehensive tests
-│   └── run-tests.js             # Test runner
-├── knowledge-base/              # Knowledge base files
-│   └── crypto/                  # Crypto trading knowledge
-├── config/                      # Configuration files
-└── package.json
+│   │   └── SettingsManager.js        ← AES-256 encrypted keys
+│   ├── ui/dashboard/
+│   │   ├── server.js                  ← Express + WebSocket server
+│   │   └── public/
+│   │       ├── index.html             ← Dashboard UI
+│   │       ├── styles.css
+│   │       ├── app.js
+│   │       └── demo.js
+│   └── utils/
+│       └── debugger.js
+├── config/
+│   └── config.json                   ← Bot configuration
+├── knowledge-base/
+│   └── crypto/
+│       └── tasks/
+│           └── crypto-trading.md      ← 6,000+ word trading guide
+├── test/
+│   ├── system-test.js
+│   └── run-tests.js
+├── .env.example                       ← Environment template
+├── .gitignore
+├── package.json
+└── README.md
 ```
-
-## 🔧 Technical Implementation
-
-### **Security**
-- AES-256-GCM encryption for API keys
-- Secure configuration management
-- Input validation and sanitization
-- Error handling without sensitive data exposure
-
-### **Performance**
-- Real-time WebSocket updates
-- Efficient memory management
-- Optimized API calls with caching
-- Automated cleanup and optimization
-
-### **Reliability**
-- Comprehensive error handling
-- Automatic backup and restore
-- Health monitoring and alerts
-- Graceful degradation
-
-### **Extensibility**
-- Pluggable architecture for new platforms
-- Modular design for easy maintenance
-- Clear separation of concerns
-- Well-documented APIs
-
-## 🧪 Testing
-
-The bot includes a comprehensive testing suite:
-
-```bash
-# Run all tests
-npm test
-
-# Test output includes:
-✅ Module initialization tests
-✅ API endpoint validation
-✅ Trading functionality tests
-✅ Risk management tests
-✅ Settings management tests
-✅ Performance tests
-✅ Error handling tests
-```
-
-## 🔄 Development Timeline
-
-This project was built with **15-minute development updates**:
-
-1. **14:00-14:15**: Universal Core Engine
-2. **14:15-14:30**: Crypto Platform Adapter
-3. **14:30-14:45**: Knowledge Base System
-4. **14:45-15:00**: Dashboard Interface
-5. **15:00-15:15**: Trading Controls Integration
-6. **15:15-15:30**: Risk Dashboard
-7. **15:30-15:45**: Settings & Configuration
-8. **15:45-16:04**: Testing & Debugging
-
-## 🎯 Ready For Production
-
-### **✅ Team Testing**
-- All code available on GitHub
-- Comprehensive test suite
-- Detailed documentation
-
-### **✅ Paper Trading**
-- Works without API keys
-- Simulated portfolio management
-- Strategy testing environment
-
-### **✅ Live Trading**
-- Production-ready with Binance
-- Risk controls and monitoring
-- Secure configuration
-
-### **✅ Future Extensions**
-- Forex platform adapter
-- Stock market adapter
-- Additional exchange integrations
-- Advanced AI strategies
-
-## 📞 Support
-
-- **GitHub Issues**: https://github.com/Gogreenraghav/universal-trading-bot/issues
-- **Repository**: https://github.com/Gogreenraghav/universal-trading-bot
-
-## 📄 License
-
-MIT License - See LICENSE file for details.
 
 ---
 
-**🎉 Universal Trading Bot is now 100% complete and ready for your trading journey! 🚀**
+## 🎮 Running Modes
 
-**Built with ❤️ in 2 hours 4 minutes with 15-minute development updates.**
+### Demo Mode (Recommended for Starters)
+```bash
+npm start
+# Works without any API keys
+# Virtual balance: $1,000 (customizable)
+```
+
+### Paper Trading (Testnet)
+```bash
+TRADING_MODE=testnet npm start
+# Uses Binance testnet — no real money
+```
+
+### Live Trading (Real Account)
+```bash
+TRADING_MODE=live npm start
+# ⚠️ WARNING: Real money at risk!
+```
+
+### Platform Selection
+```bash
+PLATFORM=crypto npm start   # Default — Crypto trading
+PLATFORM=forex npm start   # Forex trading (OANDA)
+PLATFORM=stocks npm start   # Stock trading (Zerodha)
+```
+
+---
+
+## 📊 Dashboard Features
+
+| Feature | Description |
+|---------|-------------|
+| **Portfolio** | Real-time balance, P&L, positions |
+| **Charts** | Interactive price charts (1m to 1D) |
+| **Orders** | Place buy/sell orders |
+| **Risk Monitor** | VaR, CVaR, Sharpe, Sortino, exposure |
+| **News Feed** | Sentiment analysis of market news |
+| **Bot Control** | Start/Stop bot, switch strategies |
+| **Settings** | Configure strategies, risk limits |
+
+---
+
+## 🛡️ Risk Management
+
+Built-in risk controls:
+
+- **VaR (Value at Risk)** — Portfolio downside exposure
+- **CVaR (Conditional VaR)** — Expected loss beyond VaR
+- **Sharpe Ratio** — Risk-adjusted returns
+- **Sortino Ratio** — Downside risk-adjusted returns
+- **Max Drawdown** — Maximum peak-to-trough loss
+- **Position Sizing** — Dynamic based on risk per trade
+- **Daily Loss Limit** — Auto-stop if loss exceeds threshold
+
+---
+
+## 📡 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/status` | Bot status & health |
+| GET | `/api/portfolio` | Portfolio & balance |
+| GET | `/api/positions` | Open positions |
+| POST | `/api/order` | Place new order |
+| DELETE | `/api/order/:id` | Cancel order |
+| GET | `/api/market/:symbol` | Market data |
+| GET | `/api/risk` | Risk metrics |
+| POST | `/api/settings` | Update settings |
+
+---
+
+## 🔧 Development
+
+```bash
+# Run in development mode with hot reload
+npm run dev
+
+# Run tests
+npm test
+
+# Run crypto tests
+npm run test:crypto
+
+# Lint code
+npm run lint
+
+# Auto-fix lint issues
+npm run lint:fix
+```
+
+---
+
+## 🚢 VPS Deployment
+
+### Ubuntu/Debian VPS
+
+```bash
+# SSH into your VPS, then:
+
+# 1. Install Node.js 18
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 2. Clone and setup
+git clone https://github.com/Gogreenraghav/universal-trading-bot.git
+cd universal-trading-bot
+npm install
+
+# 3. Configure
+cp .env.example .env
+nano .env  # Add your API keys
+
+# 4. Install PM2 for production process manager
+npm install -g pm2
+pm2 start src/index.js --name trading-bot
+
+# 5. Auto-restart on reboot
+pm2 startup
+pm2 save
+
+# 6. View logs
+pm2 logs trading-bot
+
+# 7. SSL with Nginx (optional)
+# Install nginx + certbot, then proxy_pass to localhost:3020
+```
+
+### Docker
+
+```bash
+# Build
+docker build -t universal-trading-bot .
+
+# Run
+docker run -d \
+  --name trading-bot \
+  -p 3020:3020 \
+  -v $(pwd)/.env:/app/.env \
+  universal-trading-bot
+
+# Stop
+docker stop trading-bot && docker rm trading-bot
+```
+
+---
+
+## ⚠️ Disclaimer
+
+**This bot is for educational and informational purposes only.**
+
+- Paper/Demo trading is simulated — no real market orders
+- Live trading involves **real financial risk**
+- Always test thoroughly on testnet before live trading
+- Never invest more than you can afford to lose
+- The authors are not responsible for any financial losses
+
+---
+
+## 📄 License
+
+MIT License — see [LICENSE](LICENSE) file.
+
+---
+
+## 🤝 Contributing
+
+Pull requests welcome! Please read contributing guidelines first.
+
+---
+
+**Built with ❤️ for traders — by Arjun Singh & Team**

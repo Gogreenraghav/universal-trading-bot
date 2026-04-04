@@ -1,0 +1,59 @@
+# Dependencies
+node_modules/
+
+# Environment files (NEVER COMMIT THESE)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Config files with secrets
+config/*.json
+!config/.gitkeep
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build outputs
+dist/
+build/
+
+# Test coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Backup files
+*.bak
+*.backup
+backups/
+
+# Credentials / secrets
+credentials/
+secrets/
+*.pem
+*.key
+
+# Docker
+.docker/
+
+# OS
+.DS_Store

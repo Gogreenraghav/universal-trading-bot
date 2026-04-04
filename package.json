@@ -66,10 +66,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/universal-trading-bot.git"
+    "url": "https://github.com/Gogreenraghav/universal-trading-bot"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/universal-trading-bot/issues"
+    "url": "https://github.com/Gogreenraghav/universal-trading-bot/issues"
   },
-  "homepage": "https://github.com/yourusername/universal-trading-bot#readme"
+  "homepage": "https://github.com/Gogreenraghav/universal-trading-bot#readme"
 }
